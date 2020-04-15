@@ -8,7 +8,7 @@
   register_s3_method("pillar", "obj_sum", "fcdist")
   
   register_s3_method("pillar", "pillar_shaft", "fcdist")
-  register_s3_method("pillar", "pillar_shaft", "agg_vec")
+  register_s3_method("pillar", "pillar_shaft", "agg_key")
   
   register_s3_method("pillar", "is_vector_s3", "fcdist")
   
@@ -20,7 +20,7 @@
   register_s3_method("dplyr", "filter", "grouped_fbl")
   register_s3_method("dplyr", "filter", "mdl_df")
   
-  register_s3_method("ggplot2", "scale_type", "agg_vec")
+  register_s3_method("ggplot2", "scale_type", "agg_key")
   
   op <- options()
   op.fable <- list(

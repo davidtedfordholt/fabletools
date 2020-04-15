@@ -55,9 +55,9 @@ aggregate_key.tbl_ts <- function(.data, .spec = NULL, ...){
   
   kv <- unique(unlist(key_comb, recursive = FALSE))
   agg_dt <- vctrs::vec_rbind(!!!map(unname(key_comb), function(x){
-    gd <- group_data(group_by(.data, !!sym(idx), !!!set_names(map(x, function(.) expr(agg_vec(!!sym(.)))), x)))
+    gd <- group_data(group_by(.data, !!sym(idx), !!!set_names(map(x, function(.) expr(agg_key(!!sym(.)))), x)))
     agg_keys <- setdiff(kv, x)
-    agg_cols <- rep(list(agg_vec(NA_character_, aggregated = TRUE)), length(agg_keys))
+    agg_cols <- rep(list(agg_key(NA_character_, aggregated = TRUE)), length(agg_keys))
     gd[agg_keys] <- agg_cols
     gd[c(idx, kv, ".rows")]
   }))
@@ -141,13 +141,13 @@ aggregate_index.tbl_ts <- function(.data, .times = NULL, ...){
     mutate(!!!set_names(map(kv, function(x) expr(agg_key(!!sym(x)))), kv))
 }
 
-agg_vec <- function(x = character(), aggregated = logical(vec_size(x))){
+agg_key <- function(x = character(), aggregated = logical(vec_size(x))){
   vec_assert(aggregated, ptype = logical())
-  vctrs::new_rcrd(list(x = x, agg = aggregated), class = "agg_vec")
+  vctrs::new_rcrd(list(x = x, agg = aggregated), class = "agg_key")
 }
 
 #' @export
-format.agg_vec <- function(x, ..., na_chr = "<aggregated>"){
+format.agg_key <- function(x, ..., na_chr = "<aggregated>"){
   n <- vec_size(x)
   x <- vec_data(x)
   is_agg <- x[["agg"]]
@@ -157,7 +157,7 @@ format.agg_vec <- function(x, ..., na_chr = "<aggregated>"){
   out 
 }
 
-pillar_shaft.agg_vec <- function(x, ...) {
+pillar_shaft.agg_key <- function(x, ...) {
   if(requireNamespace("crayon")){
     na_chr <- crayon::style("<aggregated>", crayon::make_style("#999999", grey = TRUE))
   }
@@ -171,27 +171,27 @@ pillar_shaft.agg_vec <- function(x, ...) {
 }
 
 #' @export
-vec_ptype2.agg_vec <- function(x, y, ...) UseMethod("vec_ptype2.agg_vec", y)
+vec_ptype2.agg_key <- function(x, y, ...) UseMethod("vec_ptype2.agg_key", y)
 #' @export
-vec_ptype2.agg_vec.agg_vec <- function(x, y, ...) agg_vec()
+vec_ptype2.agg_key.agg_key <- function(x, y, ...) agg_key()
 #' @export
-vec_ptype2.agg_vec.default <- function(x, y, ...) agg_vec()
+vec_ptype2.agg_key.default <- function(x, y, ...) agg_key()
 #' @export
-vec_ptype2.character.agg_vec <- function(x, y, ...) agg_vec()
+vec_ptype2.character.agg_key <- function(x, y, ...) agg_key()
 
 #' @export
-vec_ptype_abbr.agg_vec <- function(x, ...) {
+vec_ptype_abbr.agg_key <- function(x, ...) {
   vctrs::vec_ptype_abbr(vec_data(x)[["x"]], ...)
 }
 
 #' @export
-vec_cast.agg_vec <- function(x, to, ...) UseMethod("vec_cast.agg_vec")
+vec_cast.agg_key <- function(x, to, ...) UseMethod("vec_cast.agg_key")
 #' @export
-vec_cast.agg_vec.agg_vec <- function(x, to, ...) x
+vec_cast.agg_key.agg_key <- function(x, to, ...) x
 #' @export
-vec_cast.agg_vec.default <- function(x, to, ...) agg_vec(x)
+vec_cast.agg_key.default <- function(x, to, ...) agg_key(x)
 #' @export
-vec_cast.character.agg_vec <- function(x, to, ...) trimws(format(x))
+vec_cast.character.agg_key <- function(x, to, ...) trimws(format(x))
 
 #' Is the element an aggregation of smaller data
 #' 
@@ -201,8 +201,8 @@ vec_cast.character.agg_vec <- function(x, to, ...) trimws(format(x))
 #' 
 #' @export
 is_aggregated <- function(x){
-  vec_assert(x, agg_vec())
+  vec_assert(x, agg_key())
   vec_data(x)[["agg"]]
 }
 
-scale_type.agg_vec <- function(x) "discrete"
+scale_type.agg_key <- function(x) "discrete"
