@@ -265,6 +265,35 @@ mapply_maybe_parallel <- function (.f, ..., MoreArgs = list(), SIMPLIFY = FALSE)
   }
 }
 
+mapply_maybe_parallel_progress <- function(.f, ..., MoreArgs = list(), SIMPLIFY = FALSE) {
+  if(is_attached("package:progressr")) {
+    require_package("progressr")
+    
+    # check to find the input with the most elements, to define the progress bar
+    len <- 1:max(unlist(lapply(dots_list(...), length)), na.rm = TRUE)
+    
+    with_progress({
+      p <- progressor(along = len)
+      out <- mapply_maybe_parallel(
+        .f = function(...){
+          p()
+          .f(...)
+        }, 
+        ...,
+        MoreArgs = MoreArgs,
+        SIMPLIFY = SIMPLIFY)
+    })
+  } else {
+    out <- 
+      mapply_maybe_parallel(
+        .f = .f, 
+        ..., 
+        MoreArgs = MoreArgs, 
+        SIMPLIFY = SIMPLIFY)
+  }
+  out
+}
+
 mable_apply <- function (.data, .f, ..., names_to = ".model") {
   mv <- mable_vars(.data)
   kv <- key_vars(.data)
